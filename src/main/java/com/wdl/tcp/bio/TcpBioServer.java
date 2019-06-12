@@ -48,19 +48,19 @@ public class TcpBioServer {
 
     private void init(int port) throws IOException {
         ServerSocket serverSocket = new ServerSocket(port);
-        new Thread(()->{
+        BioArrayThreadPoolExecutor.executor(() -> {
             while (true){
                 Socket socket = null;
                 try {
                     socket = serverSocket.accept();
                     String key = socket.getInetAddress().getHostAddress() + socket.getPort();
                     socketMap.put(key, socket);
-                    new Thread(new ReceiveRunnable(socket)).start(); //BIO 每个Socket需要单独开辟线程
+                    BioArrayThreadPoolExecutor.executor(new ReceiveRunnable(socket)); //BIO 每个新Socket放入线程池中执行
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        }).start();
+        });
     }
 
     class ReceiveRunnable implements Runnable{
